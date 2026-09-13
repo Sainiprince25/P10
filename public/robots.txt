@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://psserviceprovider.com/sitemap.xml
+
+# Disallow admin area
+Disallow: /admin
+Disallow: /admin/
