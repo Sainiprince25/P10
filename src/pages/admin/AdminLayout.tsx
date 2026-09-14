@@ -11,9 +11,10 @@ export function AdminLogin() {
 
   if (isAdminAuthenticated) return <Navigate to="/admin" replace />;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminLogin(email, password)) {
+    const success = await adminLogin(email, password);
+    if (!success) {
       setError('Invalid credentials. Please try again.');
     }
   };
@@ -110,7 +111,7 @@ export function AdminLayout() {
           <Link to="/" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 mb-1">
             <span>🌐</span> View Website
           </Link>
-          <button onClick={() => { adminLogout(); }} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full text-left">
+          <button onClick={() => { adminLogout(); }} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full text-left" type="button">
             <LogOut className="w-5 h-5" /> Logout
           </button>
         </div>

@@ -64,17 +64,19 @@ export default function AdminEnquiries() {
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = async () => {
     if (selectedEnquiry) {
-      updateEnquiryNotes(selectedEnquiry.id, notes);
-      setNotesSaved(true);
-      setTimeout(() => setNotesSaved(false), 2000);
+      const success = await updateEnquiryNotes(selectedEnquiry.id, notes);
+      if (success) {
+        setNotesSaved(true);
+        setTimeout(() => setNotesSaved(false), 2000);
+      }
     }
   };
 
-  const advanceStatus = (enq: Enquiry) => {
+  const advanceStatus = async (enq: Enquiry) => {
     const next = statusConfig[enq.status].next;
-    if (next) updateEnquiryStatus(enq.id, next);
+    if (next) await updateEnquiryStatus(enq.id, next);
   };
 
   // Navigate between enquiries
@@ -246,7 +248,7 @@ export default function AdminEnquiries() {
                   return (
                     <React.Fragment key={status}>
                       <button
-                        onClick={() => updateEnquiryStatus(selectedEnquiry.id, status)}
+                        onClick={async () => { await updateEnquiryStatus(selectedEnquiry.id, status); }}
                         className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
                           isCurrentOrPast
                             ? status === selectedEnquiry.status

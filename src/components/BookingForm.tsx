@@ -48,12 +48,13 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      addEnquiry({
+    
+    try {
+      const success = await addEnquiry({
         fullName: formData.fullName,
         mobile: formData.mobile,
         email: formData.email,
@@ -64,9 +65,18 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         preferredTime: formData.preferredTime,
         details: formData.details,
       });
+      
+      if (success) {
+        setSubmitted(true);
+      } else {
+        alert('Failed to submit enquiry. Please try again or contact us directly.');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-    }, 800);
+    }
   };
 
   const handleChange = (field: keyof FormData, value: string) => {

@@ -13,13 +13,13 @@ export function AdminServices() {
   const startEdit = (s: Service) => { setEditing(s); setForm(s); setAdding(false); };
   const startAdd = () => { setAdding(true); setEditing(null); setForm({ name: '', slug: '', shortDescription: '', fullDescription: '', icon: '🛡️', category: 'general', active: true, order: services.length + 1 }); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name) return;
     if (editing) {
-      updateService({ ...editing, ...form } as Service);
+      await updateService({ ...editing, ...form } as Service);
       setEditing(null);
     } else {
-      addService({ ...form, slug: form.name?.toLowerCase().replace(/\s+/g, '-') || '' } as Omit<Service, 'id'>);
+      await addService({ ...form, slug: form.name?.toLowerCase().replace(/\s+/g, '-') || '' } as Omit<Service, 'id'>);
       setAdding(false);
     }
     setForm({});
@@ -63,9 +63,9 @@ export function AdminServices() {
             </div>
             <span className="text-xs px-2 py-0.5 bg-gray-100 rounded capitalize">{s.category}</span>
             <div className="flex items-center gap-1">
-              <button onClick={() => updateService({...s, active: !s.active})} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{s.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+              <button onClick={async () => { await updateService({...s, active: !s.active}); }} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{s.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
               <button onClick={() => startEdit(s)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><Edit3 className="w-4 h-4" /></button>
-              <button onClick={() => { if(confirm('Delete this service?')) deleteService(s.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={async () => { if(confirm('Delete this service?')) await deleteService(s.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
@@ -84,10 +84,10 @@ export function AdminFAQs() {
   const startEdit = (f: FAQ) => { setEditing(f); setForm(f); setAdding(false); };
   const startAdd = () => { setAdding(true); setEditing(null); setForm({ question: '', answer: '', active: true, order: faqs.length + 1 }); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.question || !form.answer) return;
-    if (editing) { updateFAQ({ ...editing, ...form } as FAQ); setEditing(null); }
-    else { addFAQ(form as Omit<FAQ, 'id'>); setAdding(false); }
+    if (editing) { await updateFAQ({ ...editing, ...form } as FAQ); setEditing(null); }
+    else { await addFAQ(form as Omit<FAQ, 'id'>); setAdding(false); }
     setForm({});
   };
 
@@ -125,9 +125,9 @@ export function AdminFAQs() {
                 <p className="text-xs text-gray-500 mt-1 line-clamp-2">{f.answer}</p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => updateFAQ({...f, active: !f.active})} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{f.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+                <button onClick={async () => { await updateFAQ({...f, active: !f.active}); }} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{f.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
                 <button onClick={() => startEdit(f)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><Edit3 className="w-4 h-4" /></button>
-                <button onClick={() => { if(confirm('Delete this FAQ?')) deleteFAQ(f.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={async () => { if(confirm('Delete this FAQ?')) await deleteFAQ(f.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
@@ -147,10 +147,10 @@ export function AdminTestimonials() {
   const startEdit = (t: Testimonial) => { setEditing(t); setForm(t); setAdding(false); };
   const startAdd = () => { setAdding(true); setEditing(null); setForm({ name: '', type: 'residential', location: 'Delhi', review: '', rating: 5, isDemo: true, active: true }); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.review) return;
-    if (editing) { updateTestimonial({ ...editing, ...form } as Testimonial); setEditing(null); }
-    else { addTestimonial(form as Omit<Testimonial, 'id'>); setAdding(false); }
+    if (editing) { await updateTestimonial({ ...editing, ...form } as Testimonial); setEditing(null); }
+    else { await addTestimonial(form as Omit<Testimonial, 'id'>); setAdding(false); }
     setForm({});
   };
 
@@ -195,9 +195,9 @@ export function AdminTestimonials() {
                 <p className="text-xs text-gray-600 mt-1 line-clamp-2">{t.review}</p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => updateTestimonial({...t, active: !t.active})} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{t.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+                <button onClick={async () => { await updateTestimonial({...t, active: !t.active}); }} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{t.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
                 <button onClick={() => startEdit(t)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><Edit3 className="w-4 h-4" /></button>
-                <button onClick={() => { if(confirm('Delete?')) deleteTestimonial(t.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={async () => { if(confirm('Delete?')) await deleteTestimonial(t.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
@@ -217,10 +217,10 @@ export function AdminHero() {
   const startEdit = (h: HeroMessage) => { setEditing(h); setForm(h); setAdding(false); };
   const startAdd = () => { setAdding(true); setEditing(null); setForm({ text: '', active: true, order: heroMessages.length + 1 }); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.text) return;
-    if (editing) { updateHeroMessage({ ...editing, ...form } as HeroMessage); setEditing(null); }
-    else { addHeroMessage(form as Omit<HeroMessage, 'id'>); setAdding(false); }
+    if (editing) { await updateHeroMessage({ ...editing, ...form } as HeroMessage); setEditing(null); }
+    else { await addHeroMessage(form as Omit<HeroMessage, 'id'>); setAdding(false); }
     setForm({});
   };
 
@@ -254,9 +254,9 @@ export function AdminHero() {
               <p className="font-medium text-gray-900 text-sm">{h.text}</p>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => updateHeroMessage({...h, active: !h.active})} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{h.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+              <button onClick={async () => { await updateHeroMessage({...h, active: !h.active}); }} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">{h.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
               <button onClick={() => startEdit(h)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><Edit3 className="w-4 h-4" /></button>
-              <button onClick={() => { if(confirm('Delete?')) deleteHeroMessage(h.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={async () => { if(confirm('Delete?')) await deleteHeroMessage(h.id); }} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
@@ -271,10 +271,14 @@ export function AdminSettings() {
   const [form, setForm] = useState<BusinessInfo>({ ...businessInfo });
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    updateBusinessInfo(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    const success = await updateBusinessInfo(form);
+    if (success) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert('Failed to save business information. Please try again.');
+    }
   };
 
   return (
