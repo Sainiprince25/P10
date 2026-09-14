@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Send, CheckCircle, Phone, MessageCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { propertyTypes, timeSlots } from '../data/content';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface FormData {
   fullName: string;
@@ -19,14 +20,84 @@ interface FormErrors {
   [key: string]: string;
 }
 
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string | HTMLElement, options: any) => string;
+      reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
+      getResponse: (widgetId: string) => string | undefined;
+    };
+  }
+}
+
 export function BookingForm({ compact = false }: { compact?: boolean }) {
-  const { services, businessInfo, addEnquiry } = useApp();
+  const { services, businessInfo, addEnquiry, isSupabaseConnected } = useApp();
   const [formData, setFormData] = useState<FormData>({
     fullName: '', mobile: '', email: '', service: '', propertyType: '', location: '', preferredDate: '', preferredTime: '', details: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetId = useRef<string>('');
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+  const turnstileEnabled = Boolean(turnstileSiteKey);
+
+  // Load Turnstile script
+  useEffect(() => {
+    if (!turnstileEnabled) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      if (turnstileWidgetId.current && window.turnstile) {
+        window.turnstile.remove(turnstileWidgetId.current);
+      }
+    };
+  }, [turnstileEnabled]);
+
+  // Render Turnstile widget when script is loaded
+  useEffect(() => {
+    if (!turnstileEnabled || !turnstileRef.current) return;
+
+    const renderWidget = () => {
+      if (!window.turnstile || !turnstileRef.current) return;
+      if (turnstileWidgetId.current) {
+        window.turnstile.remove(turnstileWidgetId.current);
+      }
+      turnstileWidgetId.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: turnstileSiteKey,
+        callback: (token: string) => {
+          setTurnstileToken(token);
+        },
+        'error-callback': () => {
+          setTurnstileToken('');
+        },
+        'expired-callback': () => {
+          setTurnstileToken('');
+        },
+      });
+    };
+
+    // Wait for script to load
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      const interval = setInterval(() => {
+        if (window.turnstile) {
+          renderWidget();
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [turnstileEnabled, turnstileSiteKey, submitted]);
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -44,6 +115,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
       if (selectedDate < today) newErrors.preferredDate = 'Date cannot be in the past';
     }
     if (!formData.preferredTime) newErrors.preferredTime = 'Please select a preferred time';
+    if (turnstileEnabled && !turnstileToken) newErrors.turnstile = 'Please complete the security verification';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -52,28 +124,50 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     e.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
-    
+
     try {
-      const success = await addEnquiry({
-        fullName: formData.fullName,
-        mobile: formData.mobile,
-        email: formData.email,
-        service: formData.service,
-        propertyType: formData.propertyType,
-        location: formData.location,
-        preferredDate: formData.preferredDate,
-        preferredTime: formData.preferredTime,
-        details: formData.details,
-      });
-      
-      if (success) {
+      // Use secure Edge Function if Supabase is connected
+      if (isSupabaseConnected) {
+        const { data, error } = await supabase.functions.invoke('submit-enquiry', {
+          body: {
+            ...formData,
+            turnstile_token: turnstileToken,
+          },
+        });
+
+        if (error || !data?.success) {
+          const errorMsg = data?.error || data?.errors?.join(', ') || 'Submission failed';
+          throw new Error(errorMsg);
+        }
+
         setSubmitted(true);
+        setTurnstileToken('');
+        if (turnstileWidgetId.current && window.turnstile) {
+          window.turnstile.reset(turnstileWidgetId.current);
+        }
       } else {
-        alert('Failed to submit enquiry. Please try again or contact us directly.');
+        // Fallback for demo mode (no Supabase)
+        const success = await addEnquiry({
+          fullName: formData.fullName,
+          mobile: formData.mobile,
+          email: formData.email,
+          service: formData.service,
+          propertyType: formData.propertyType,
+          location: formData.location,
+          preferredDate: formData.preferredDate,
+          preferredTime: formData.preferredTime,
+          details: formData.details,
+        });
+
+        if (success) {
+          setSubmitted(true);
+        } else {
+          throw new Error('Failed to submit enquiry');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Submission error:', error);
-      alert('An error occurred. Please try again.');
+      setErrors({ submit: error.message || 'Failed to submit enquiry. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -123,22 +217,28 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         <p className="text-sm text-gray-500 mt-1">Fill in your details and we'll get back to you with a quotation.</p>
       </div>
 
+      {errors.submit && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          {errors.submit}
+        </div>
+      )}
+
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
-          <input type="text" value={formData.fullName} onChange={e => handleChange('fullName', e.target.value)} placeholder="Enter your full name" className={inputClass('fullName')} />
+          <input type="text" value={formData.fullName} onChange={e => handleChange('fullName', e.target.value)} placeholder="Enter your full name" className={inputClass('fullName')} autoComplete="name" />
           {errors.fullName && <p className="text-xs text-red-600 mt-1">{errors.fullName}</p>}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile Number <span className="text-red-500">*</span></label>
-            <input type="tel" value={formData.mobile} onChange={e => handleChange('mobile', e.target.value)} placeholder="10-digit number" className={inputClass('mobile')} />
+            <input type="tel" value={formData.mobile} onChange={e => handleChange('mobile', e.target.value)} placeholder="10-digit number" className={inputClass('mobile')} autoComplete="tel" />
             {errors.mobile && <p className="text-xs text-red-600 mt-1">{errors.mobile}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Email <span className="text-gray-400 text-xs">(optional)</span></label>
-            <input type="email" value={formData.email} onChange={e => handleChange('email', e.target.value)} placeholder="your@email.com" className={inputClass('email')} />
+            <input type="email" value={formData.email} onChange={e => handleChange('email', e.target.value)} placeholder="your@email.com" className={inputClass('email')} autoComplete="email" />
             {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
           </div>
         </div>
@@ -188,6 +288,14 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Additional Details <span className="text-gray-400 text-xs">(optional)</span></label>
           <textarea value={formData.details} onChange={e => handleChange('details', e.target.value)} placeholder="Describe your pest problem, property size, or any specific requirements..." rows={3} className={inputClass('details')} />
         </div>
+
+        {/* Turnstile Widget */}
+        {turnstileEnabled && (
+          <div>
+            <div ref={turnstileRef} className="flex justify-center" />
+            {errors.turnstile && <p className="text-xs text-red-600 mt-1 text-center">{errors.turnstile}</p>}
+          </div>
+        )}
 
         <button type="submit" disabled={isSubmitting}
           className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl text-base">

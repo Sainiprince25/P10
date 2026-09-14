@@ -99,10 +99,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unsubscribe = unsub;
     });
 
+    // For demo mode, persist auth state in localStorage
+    // This is ONLY for development without Supabase
+    if (!isSupabaseConfigured && import.meta.env.DEV) {
+      const savedAuth = localStorage.getItem('ps_admin_auth');
+      if (savedAuth === 'true') {
+        setIsAdminAuthenticated(true);
+      }
+    }
+
     return () => { 
       if (unsubscribe) unsubscribe(); 
     };
   }, [loadData]);
+
+  // Persist demo auth state (development only)
+  useEffect(() => {
+    if (!isSupabaseConfigured && import.meta.env.DEV) {
+      localStorage.setItem('ps_admin_auth', String(isAdminAuthenticated));
+    }
+  }, [isAdminAuthenticated]);
 
   // ============================================
   // ENQUIRIES
