@@ -85,13 +85,40 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  {/* Map placeholder */}
-                  <div className="mt-6 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 h-48 flex items-center justify-center">
-                    <div className="text-center text-gray-400">
-                      <MapPin className="w-8 h-8 mx-auto mb-2" />
-                      <p className="text-sm">Map will be displayed here</p>
-                      <p className="text-xs">Once address is confirmed</p>
-                    </div>
+                  {/* Google Maps */}
+                  <div className="mt-6">
+                    {businessInfo.googleMapsEmbed ? (
+                      <div className="rounded-xl overflow-hidden border border-gray-200">
+                        <iframe
+                          src={businessInfo.googleMapsEmbed}
+                          width="100%"
+                          height="250"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Business Location"
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-100 h-48 flex items-center justify-center">
+                        <div className="text-center text-gray-400">
+                          <MapPin className="w-8 h-8 mx-auto mb-2" />
+                          <p className="text-sm">Map not configured</p>
+                          <p className="text-xs">Add Google Maps embed in admin settings</p>
+                        </div>
+                      </div>
+                    )}
+                    {businessInfo.googleMapsUrl && (
+                      <a
+                        href={businessInfo.googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                      >
+                        <MapPin className="w-4 h-4" /> Open in Google Maps
+                      </a>
+                    )}
                   </div>
 
                   <div className="mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100">

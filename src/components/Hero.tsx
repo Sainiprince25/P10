@@ -9,6 +9,7 @@ export function Hero() {
   const [isAnimating, setIsAnimating] = useState(false);
   const activeMessages = heroMessages.filter(m => m.active);
   const whatsappLink = `https://wa.me/${businessInfo.whatsapp}?text=${encodeURIComponent('Hi, I need pest control services. Please share details.')}`;
+  const serviceAreasText = businessInfo.serviceAreas.join(', ');
 
   useEffect(() => {
     if (activeMessages.length <= 1) return;
@@ -36,7 +37,7 @@ export function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-emerald-200 text-sm font-medium mb-6 border border-white/10">
               <Shield className="w-4 h-4" />
-              Trusted Pest Control in Delhi NCR
+              Trusted Pest Control in {serviceAreasText}
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
@@ -46,7 +47,7 @@ export function Hero() {
             </h1>
 
             <p className="text-lg sm:text-xl text-emerald-100/80 mb-8 max-w-lg leading-relaxed">
-              Safe, reliable, and effective pest management solutions for your home and business. Serving Delhi, Gurugram, Noida & Faridabad.
+              Safe, reliable, and effective pest management solutions for your home and business. Serving {serviceAreasText}.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-10">

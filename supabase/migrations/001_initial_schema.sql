@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS business_info (
   description TEXT NOT NULL DEFAULT 'Professional pest control services across Delhi, Gurugram, Noida & Faridabad.',
   service_areas TEXT[] DEFAULT ARRAY['Delhi', 'Gurugram', 'Noida', 'Faridabad'],
   business_hours TEXT NOT NULL DEFAULT 'To Be Confirmed',
+  google_maps_embed TEXT DEFAULT '',
+  google_maps_url TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

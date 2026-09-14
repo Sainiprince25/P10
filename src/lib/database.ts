@@ -366,6 +366,8 @@ export async function fetchBusinessInfo(): Promise<BusinessInfo | null> {
     description: data.description,
     serviceAreas: data.service_areas,
     businessHours: data.business_hours,
+    googleMapsEmbed: data.google_maps_embed || '',
+    googleMapsUrl: data.google_maps_url || '',
   };
 }
 
@@ -390,6 +392,8 @@ export async function updateBusinessInfo(info: BusinessInfo): Promise<boolean> {
       description: info.description,
       service_areas: info.serviceAreas,
       business_hours: info.businessHours,
+      google_maps_embed: info.googleMapsEmbed || '',
+      google_maps_url: info.googleMapsUrl || '',
     });
     return !error;
   }
@@ -405,6 +409,8 @@ export async function updateBusinessInfo(info: BusinessInfo): Promise<boolean> {
       description: info.description,
       service_areas: info.serviceAreas,
       business_hours: info.businessHours,
+      google_maps_embed: info.googleMapsEmbed || '',
+      google_maps_url: info.googleMapsUrl || '',
     })
     .eq('id', existing.id);
 

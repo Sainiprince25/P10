@@ -62,6 +62,8 @@ export interface BusinessInfo {
   description: string;
   serviceAreas: string[];
   businessHours: string;
+  googleMapsEmbed?: string;
+  googleMapsUrl?: string;
 }
 
 export const defaultBusinessInfo: BusinessInfo = {
@@ -73,6 +75,8 @@ export const defaultBusinessInfo: BusinessInfo = {
   description: 'Professional pest control services across Delhi, Gurugram, Noida & Faridabad. Safe, reliable, and effective solutions for homes and businesses.',
   serviceAreas: ['Delhi', 'Gurugram', 'Noida', 'Faridabad'],
   businessHours: 'To Be Confirmed',
+  googleMapsEmbed: '',
+  googleMapsUrl: '',
 };
 
 export const defaultServices: Service[] = [

@@ -298,6 +298,12 @@ export function AdminSettings() {
           <div className="md:col-span-2"><label className="block text-xs font-medium text-gray-600 mb-1">Business Description</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" /></div>
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Business Hours</label><input value={form.businessHours} onChange={e => setForm({...form, businessHours: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" /></div>
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Service Areas (comma-separated)</label><input value={form.serviceAreas.join(', ')} onChange={e => setForm({...form, serviceAreas: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" /></div>
+          <div className="md:col-span-2"><label className="block text-xs font-medium text-gray-600 mb-1">Google Maps Embed Code</label><textarea value={form.googleMapsEmbed || ''} onChange={e => setForm({...form, googleMapsEmbed: e.target.value})} rows={3} placeholder="Paste the iframe embed code from Google Maps" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm font-mono" /></div>
+          <div className="md:col-span-2"><label className="block text-xs font-medium text-gray-600 mb-1">Google Maps URL</label><input value={form.googleMapsUrl || ''} onChange={e => setForm({...form, googleMapsUrl: e.target.value})} placeholder="https://maps.google.com/..." className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" /></div>
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800"><strong>Note:</strong> All changes are saved to the database and will be reflected on the public website immediately.</p>
         </div>
 
         <div className="mt-6 flex items-center gap-4">

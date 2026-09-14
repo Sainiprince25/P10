@@ -4,7 +4,8 @@
 -- ============================================
 -- BUSINESS INFO (singleton)
 -- ============================================
-INSERT INTO business_info (id, name, phone, whatsapp, email, address, description, service_areas, business_hours)
+-- NOTE: This is placeholder/seed data. Client should update via Admin Dashboard.
+INSERT INTO business_info (id, name, phone, whatsapp, email, address, description, service_areas, business_hours, google_maps_embed, google_maps_url)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'P.S Service Provider',
@@ -14,7 +15,9 @@ VALUES (
   'Delhi NCR, India',
   'Professional pest control services across Delhi, Gurugram, Noida & Faridabad. Safe, reliable, and effective solutions for homes and businesses.',
   ARRAY['Delhi', 'Gurugram', 'Noida', 'Faridabad'],
-  'To Be Confirmed'
+  'To Be Confirmed',
+  '',
+  ''
 );
 
 -- ============================================
