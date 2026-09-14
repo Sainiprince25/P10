@@ -104,33 +104,49 @@ export default function AdminDashboard() {
       {/* Recent Enquiries */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="font-bold text-gray-900">Recent Enquiries</h3>
-          <Link to="/admin/enquiries" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">View All</Link>
+          <div>
+            <h3 className="font-bold text-gray-900">Recent Enquiries</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Click any enquiry to view full customer details</p>
+          </div>
+          <Link to="/admin/enquiries" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">View All →</Link>
         </div>
         {recentEnquiries.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">
-            <FileText className="w-10 h-10 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">No enquiries yet. Enquiries will appear here when customers submit the booking form.</p>
+          <div className="p-10 text-center text-gray-400">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p className="font-medium text-gray-500 mb-1">No enquiries yet</p>
+            <p className="text-sm">Enquiries will appear here when customers submit the booking form on the website.</p>
+            <Link to="/contact" className="inline-block mt-4 text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+              Try submitting a test enquiry →
+            </Link>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
             {recentEnquiries.map(enq => (
-              <div key={enq.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{enq.fullName}</p>
-                  <p className="text-xs text-gray-500">{enq.service} • {enq.location}</p>
+              <Link key={enq.id} to="/admin/enquiries" className="block px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{enq.fullName}</p>
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                        enq.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                        enq.status === 'contacted' ? 'bg-amber-100 text-amber-700' :
+                        enq.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
+                        enq.status === 'booked' ? 'bg-indigo-100 text-indigo-700' :
+                        'bg-emerald-100 text-emerald-700'
+                      }`}>{enq.status}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                      <span>📞 {enq.mobile}</span>
+                      <span>🏷️ {enq.service}</span>
+                      <span>📍 {enq.location}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs text-gray-400">{new Date(enq.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>
+                    <p className="text-xs text-emerald-600 font-medium mt-1">View Details →</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                    enq.status === 'new' ? 'bg-blue-100 text-blue-700' :
-                    enq.status === 'contacted' ? 'bg-amber-100 text-amber-700' :
-                    enq.status === 'quoted' ? 'bg-purple-100 text-purple-700' :
-                    enq.status === 'booked' ? 'bg-indigo-100 text-indigo-700' :
-                    'bg-emerald-100 text-emerald-700'
-                  }`}>{enq.status}</span>
-                  <span className="text-xs text-gray-400">{new Date(enq.submittedAt).toLocaleDateString('en-IN')}</span>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

@@ -153,9 +153,10 @@ export function Footer() {
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-500">© {new Date().getFullYear()} {businessInfo.name}. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex items-center gap-6">
             <Link to="/privacy" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">Terms & Conditions</Link>
+            <Link to="/admin/login" className="text-xs text-gray-600 hover:text-gray-300 transition-colors opacity-60 hover:opacity-100">Admin</Link>
           </div>
         </div>
       </div>
