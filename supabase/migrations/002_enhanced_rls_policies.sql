@@ -48,11 +48,9 @@ CREATE POLICY "public_read_business_info" ON business_info
   FOR SELECT
   USING (true);
 
--- Public can INSERT enquiries (booking form submissions)
--- But NOT update or delete
-CREATE POLICY "public_insert_enquiries" ON enquiries
-  FOR INSERT
-  WITH CHECK (true);
+-- NOTE: Public users CANNOT INSERT enquiries directly
+-- All enquiry submissions must go through the Edge Function (submit-enquiry)
+-- which uses the service-role key to bypass RLS and perform server-side validation
 
 -- ============================================
 -- AUTHENTICATED ADMIN POLICIES
@@ -111,8 +109,9 @@ CREATE POLICY "admin_all_status_history" ON enquiry_status_history
 -- ============================================
 -- 1. Public users can ONLY:
 --    - Read active services, FAQs, testimonials, hero messages, business info
---    - Insert new enquiries
---    - They CANNOT update or delete anything
+--    - They CANNOT insert, update, or delete enquiries
+--    - All enquiry submissions must go through the Edge Function (submit-enquiry)
+--      which uses service-role key and performs server-side validation
 --
 -- 2. Authenticated admins can:
 --    - Read all content (including inactive)

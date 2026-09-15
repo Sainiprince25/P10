@@ -185,9 +185,9 @@ CREATE POLICY "Public can read active hero messages" ON hero_messages
 CREATE POLICY "Public can read business info" ON business_info
   FOR SELECT USING (true);
 
--- PUBLIC INSERT: Anyone can submit enquiries (no auth required)
-CREATE POLICY "Public can insert enquiries" ON enquiries
-  FOR INSERT WITH CHECK (true);
+-- NOTE: No public INSERT policy for enquiries
+-- All enquiry submissions must go through the Edge Function (submit-enquiry)
+-- which uses the service-role key and performs server-side validation
 
 -- AUTHENTICATED: Admin users can do everything
 -- Note: In production, you'll create an admin user via Supabase Auth
