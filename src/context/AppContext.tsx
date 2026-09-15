@@ -53,21 +53,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load all data from Supabase on mount
-  const loadData = useCallback(async () => {
+  // Load public data (no auth required)
+  const loadPublicData = useCallback(async () => {
     if (!isSupabaseConfigured) {
-      setIsLoading(false);
       return;
     }
 
     try {
-      const [servicesData, faqsData, testimonialsData, heroData, businessData, enquiriesData] = await Promise.all([
+      const [servicesData, faqsData, testimonialsData, heroData, businessData] = await Promise.all([
         db.fetchServices(),
         db.fetchFAQs(),
         db.fetchTestimonials(),
         db.fetchHeroMessages(),
         db.fetchBusinessInfo(),
-        db.fetchEnquiries(),
       ]);
 
       if (servicesData.length > 0) setServices(servicesData);
@@ -75,26 +73,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (testimonialsData.length > 0) setTestimonials(testimonialsData);
       if (heroData.length > 0) setHeroMessages(heroData);
       if (businessData) setBusinessInfo(businessData);
+    } catch (error) {
+      console.error('Error loading public data:', error);
+    }
+  }, []);
+
+  // Load enquiries (requires authentication)
+  const loadEnquiries = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    try {
+      const enquiriesData = await db.fetchEnquiries();
       setEnquiries(enquiriesData);
+    } catch (error) {
+      console.error('Error loading enquiries:', error);
+    }
+  }, []);
+
+  // Load all data (public + enquiries if authenticated)
+  const loadData = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Load public data first
+      await loadPublicData();
 
       // Check auth state
       const user = await auth.getCurrentUser();
-      if (user) setIsAdminAuthenticated(true);
+      if (user) {
+        setIsAdminAuthenticated(true);
+        // Only load enquiries if authenticated
+        await loadEnquiries();
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadPublicData, loadEnquiries]);
 
   useEffect(() => {
+    // Initial load
     loadData();
 
     // Listen for auth state changes
     let unsubscribe: (() => void) | undefined;
     
-    auth.onAuthStateChange((user) => {
-      setIsAdminAuthenticated(!!user);
+    auth.onAuthStateChange(async (user) => {
+      const isAuthenticated = !!user;
+      setIsAdminAuthenticated(isAuthenticated);
+      
+      if (isAuthenticated) {
+        // User logged in or session restored - load enquiries
+        await loadEnquiries();
+      } else {
+        // User logged out - clear enquiries from memory
+        setEnquiries([]);
+      }
     }).then(unsub => {
       unsubscribe = unsub;
     });
@@ -111,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => { 
       if (unsubscribe) unsubscribe(); 
     };
-  }, [loadData]);
+  }, [loadData, loadEnquiries]);
 
   // Persist demo auth state (development only)
   useEffect(() => {
@@ -162,8 +202,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured) {
       const success = await db.updateEnquiryStatus(id, status, note);
       if (!success) {
-        // Revert on failure
-        await loadData();
+        // Revert on failure - only refresh enquiries if authenticated
+        if (isAdminAuthenticated) {
+          await loadEnquiries();
+        }
       }
       return success;
     }
@@ -310,10 +352,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const adminLogout = async (): Promise<void> => {
     await auth.signOut();
     setIsAdminAuthenticated(false);
+    // Clear enquiries from memory on logout for security
+    setEnquiries([]);
   };
 
   const refreshData = async (): Promise<void> => {
-    await loadData();
+    // Refresh public data always
+    await loadPublicData();
+    // Only refresh enquiries if authenticated
+    if (isAdminAuthenticated) {
+      await loadEnquiries();
+    }
   };
 
   return (
