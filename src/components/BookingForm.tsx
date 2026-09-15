@@ -32,7 +32,7 @@ declare global {
 }
 
 export function BookingForm({ compact = false }: { compact?: boolean }) {
-  const { services, businessInfo, addEnquiry, isSupabaseConnected } = useApp();
+  const { services, businessInfo, addEnquiry, isSupabaseConnected, refreshData } = useApp();
   const [formData, setFormData] = useState<FormData>({
     fullName: '', mobile: '', email: '', service: '', propertyType: '', location: '', preferredDate: '', preferredTime: '', details: ''
   });
@@ -139,6 +139,9 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
           const errorMsg = data?.error || data?.errors?.join(', ') || 'Submission failed';
           throw new Error(errorMsg);
         }
+
+        // Refresh data from Supabase to sync enquiries across the app
+        await refreshData();
 
         setSubmitted(true);
         setTurnstileToken('');
