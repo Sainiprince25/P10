@@ -130,7 +130,15 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
       if (isSupabaseConnected) {
         const { data, error } = await supabase.functions.invoke('submit-enquiry', {
           body: {
-            ...formData,
+            full_name: formData.fullName,
+            mobile: formData.mobile,
+            email: formData.email,
+            service: formData.service,
+            property_type: formData.propertyType,
+            location: formData.location,
+            preferred_date: formData.preferredDate,
+            preferred_time: formData.preferredTime,
+            details: formData.details,
             turnstile_token: turnstileToken,
           },
         });
